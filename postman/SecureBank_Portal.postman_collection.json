@@ -1,0 +1,284 @@
+{
+	"info": {
+		"_postman_id": "a918237b-9901-4c12-8812-securebank01",
+		"name": "SecureBank Portal API Collection",
+		"description": "Complete REST API collection for SecureBank Portal including authentication, banking transactions, accounts, profile, and Sentry demo endpoints.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "demoUrl",
+			"value": "http://localhost:8000/demo",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"test_user\",\n  \"email\": \"test_user@securebank.com\",\n  \"full_name\": \"Test User\",\n  \"phone\": \"+1-555-0999\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login (Get JWT Token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.access_token) {",
+									"    pm.collectionVariables.set('token', jsonData.access_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"john_doe\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Get Current User Profile (/auth/me)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "me"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Accounts",
+			"item": [
+				{
+					"name": "Get All User Accounts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/accounts/",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Transfer Funds",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"source_account_number\": \"3090001001\",\n  \"target_account_number\": \"3090001003\",\n  \"amount\": 250.00,\n  \"description\": \"Consulting Services Payment\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/transactions/transfer",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "transfer"]
+						}
+					}
+				},
+				{
+					"name": "Transaction History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/history?limit=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "history"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search & Filter Transactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/search?min_amount=50&max_amount=1000",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "search"],
+							"query": [
+								{
+									"key": "min_amount",
+									"value": "50"
+								},
+								{
+									"key": "max_amount",
+									"value": "1000"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Demo Vulnerability Endpoints",
+			"item": [
+				{
+					"name": "SQL Injection Demo",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{demoUrl}}/search?q=' OR '1'='1",
+							"host": ["{{demoUrl}}"],
+							"path": ["search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "' OR '1'='1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Reflected XSS Demo",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{demoUrl}}/search-xss?q=<script>alert('XSS')</script>",
+							"host": ["{{demoUrl}}"],
+							"path": ["search-xss"],
+							"query": [
+								{
+									"key": "q",
+									"value": "<script>alert('XSS')</script>"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Brute Force Login Demo",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"wrongpass123\"\n}"
+						},
+						"url": {
+							"raw": "{{demoUrl}}/login",
+							"host": ["{{demoUrl}}"],
+							"path": ["login"]
+						}
+					}
+				},
+				{
+					"name": "Path Traversal Demo",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{demoUrl}}/statement?file=../../../etc/passwd",
+							"host": ["{{demoUrl}}"],
+							"path": ["statement"],
+							"query": [
+								{
+									"key": "file",
+									"value": "../../../etc/passwd"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}

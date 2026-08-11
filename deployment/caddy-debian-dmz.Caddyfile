@@ -1,0 +1,29 @@
+# Caddyfile for Debian DMZ Host VM
+# Place in /etc/caddy/Caddyfile on Debian DMZ VM
+
+:80 {
+    # Set static files root for React Frontend
+    root * /var/www/sentryvault/dist
+    file_server
+
+    # Fallback for Single Page App routing
+    try_files {path} {path}/ /index.html
+
+    # Proxy API Requests to local FastAPI backend service
+    handle_path /api/v1/* {
+        rewrite * /api/v1{path}
+        reverse_proxy 127.0.0.1:8000
+    }
+
+    # Enable security headers
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+    }
+
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}
