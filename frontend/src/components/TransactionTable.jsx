@@ -1,7 +1,15 @@
-import React from 'react';
-import { CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle, Copy, Check } from 'lucide-react';
 
 export const TransactionTable = ({ transactions = [], userAccountIds = [] }) => {
+  const [copiedId, setCopiedId] = useState(null);
+
+  const handleCopy = (refText) => {
+    navigator.clipboard.writeText(refText);
+    setCopiedId(refText);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   if (!transactions || transactions.length === 0) {
     return (
       <div className="text-center py-8 text-slate-500 bg-white rounded border border-slate-300">
@@ -53,7 +61,20 @@ export const TransactionTable = ({ transactions = [], userAccountIds = [] }) => 
                   {tx.transaction_type}
                 </td>
                 <td className="px-4 py-2 border-r border-slate-200 font-mono text-[11px] font-bold text-slate-800">
-                  {tx.transaction_ref}
+                  <div className="flex items-center gap-1.5">
+                    <span>{tx.transaction_ref}</span>
+                    <button
+                      onClick={() => handleCopy(tx.transaction_ref)}
+                      className="text-slate-400 hover:text-[#003366] transition"
+                      title="Copy Txn Ref"
+                    >
+                      {copiedId === tx.transaction_ref ? (
+                        <Check className="w-3 h-3 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3 h-3" />
+                      )}
+                    </button>
+                  </div>
                 </td>
                 <td className="px-4 py-2 border-r border-slate-200 text-slate-800 font-medium">
                   {tx.description || 'N/A'}
