@@ -314,6 +314,7 @@ SentryVault/
 **SentryVault DevSecOps Lab · Built for Security Operations & Cybersecurity Demonstration**  
 FastAPI · React · MySQL 8 · PostgreSQL 16 · Wazuh v4.14.7 · Nginx · SOAR
 
-**Maintained by [@abhienix](https://github.com/abhienix)**
+**Maintained by [@abhienix](https://github.com/abhienix) & [@Tanmaysune](https://github.com/Tanmaysune)**
 
 </div>
+
