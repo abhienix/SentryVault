@@ -52,9 +52,11 @@ async def custom_400_handler(request: Request, exc):
 
 @app.exception_handler(401)
 async def custom_401_handler(request: Request, exc):
+    headers = getattr(exc, 'headers', None)
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        content={"success": False, "error": "Unauthorized", "detail": str(exc.detail if hasattr(exc, 'detail') else exc)}
+        content={"success": False, "error": "Unauthorized", "detail": str(exc.detail if hasattr(exc, 'detail') else exc)},
+        headers=headers
     )
 
 @app.exception_handler(403)
