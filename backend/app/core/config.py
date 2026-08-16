@@ -34,6 +34,11 @@ class Settings(BaseSettings):
             return f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
         return v
     
+    # PostgreSQL Security Operations DB (sentry_security)
+    POSTGRES_SOC_URL: str = Field(
+        default="postgresql+psycopg2://sentry_soc:SocSecurityPass123!@127.0.0.1:5432/sentry_security"
+    )
+
     # Demo Mode Flag (Sentry Vulnerability Showcase)
     DEMO_MODE: bool = Field(default=True)
     

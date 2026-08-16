@@ -118,3 +118,91 @@ All protected endpoints require HTTP header:
 | `/demo/statement` | `GET` | Path Traversal (Arbitrary file read) | `?file=../../../etc/passwd` |
 
 *Note: When `DEMO_MODE=false`, all `/demo/*` endpoints return `404 Not Found`.*
+
+---
+
+## 6. Security Operations Center (SOC) Endpoints
+
+Prefix: `/api/v1/soc`
+
+All protected SOC endpoints require administrator privileges (`role === "ADMIN"`).
+
+### 6.1 Get Threat Events
+- **GET** `/soc/threats`
+- **Header**: `Authorization: Bearer <admin_token>`
+- **Query Params**: `limit` (default 50), `offset` (default 0), `severity` (CRITICAL,HIGH,MEDIUM,LOW), `source_ip`, `threat_type`
+- **Response** `200 OK`: Array of threat event objects from PostgreSQL `sentry_security`.
+
+### 6.2 Get Quarantined / Blocked IPs
+- **GET** `/soc/blocked-ips`
+- **Header**: `Authorization: Bearer <admin_token>`
+- **Query Params**: `include_inactive` (boolean, default false)
+- **Response** `200 OK`: Array of active blocked IP records.
+
+### 6.3 Quarantine IP Address
+- **POST** `/soc/block-ip`
+- **Header**: `Authorization: Bearer <admin_token>`
+- **Request Body**:
+```json
+{
+  "ip_address": "192.168.10.99",
+  "reason": "Suspicious brute force attack"
+}
+```
+- **Action**: Validates IP, inserts record into PostgreSQL `blocked_ips`, and executes `soc_automation.py --block-ip` to add an `iptables` DROP rule.
+- **Response** `200 OK`: Blocked IP record object.
+
+### 6.4 Unblock / Remove IP from Quarantine
+- **POST** `/soc/unblock-ip`
+- **Header**: `Authorization: Bearer <admin_token>`
+- **Request Body**:
+```json
+{
+  "ip_address": "192.168.10.99"
+}
+```
+- **Action**: Updates PostgreSQL `blocked_ips` `active=FALSE` and executes `soc_automation.py --unblock-ip` to delete `iptables` DROP rule.
+- **Response** `200 OK`: `{"success": true, "message": "IP ... removed from quarantine."}`
+
+### 6.5 Get WAF Alerts
+- **GET** `/soc/waf-alerts`
+- **Header**: `Authorization: Bearer <admin_token>`
+- **Query Params**: `limit` (default 50), `blocked_only` (boolean)
+- **Response** `200 OK`: Array of Coraza/Caddy WAF alert records.
+
+### 6.6 Infrastructure Health Check
+- **GET** `/soc/health-check`
+- **Auth**: Public (No token required)
+- **Action**: Performs TCP socket ping tests for MySQL (3306), PostgreSQL (5432), Wazuh API (55000), Internal Host (8000), and DMZ Host (8000).
+- **Response** `200 OK`:
+```json
+{
+  "timestamp": "2026-08-16T12:00:00Z",
+  "overall_status": "ALL_GREEN",
+  "services": [
+    { "name": "MySQL DB", "connected": true, "latency_ms": 1.2 },
+    { "name": "PostgreSQL SOC", "connected": true, "latency_ms": 2.1 },
+    { "name": "Wazuh Manager", "connected": true, "latency_ms": 0.8 },
+    { "name": "Internal Host", "connected": true, "latency_ms": 0.4 },
+    { "name": "DMZ FastAPI", "connected": true, "latency_ms": 1.7 }
+  ]
+}
+```
+
+### 6.7 Banking & Security Unified KPIs
+- **GET** `/soc/banking-kpis`
+- **Header**: `Authorization: Bearer <admin_token>`
+- **Response** `200 OK`:
+```json
+{
+  "total_deposits": 450408.73,
+  "total_accounts": 10,
+  "total_users": 4,
+  "active_accounts": 10,
+  "transactions_24h": 0,
+  "total_transactions": 100,
+  "threat_events_total": 8,
+  "active_blocked_ips": 3
+}
+```
+

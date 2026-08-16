@@ -22,6 +22,7 @@
 - [Database Schemas](#-database-schemas)
 - [Wazuh SIEM & Active Response](#-wazuh-siem--active-response)
 - [SOAR Automation](#-soar-automation)
+- [SOC Command Center Dashboard](#-soc-command-center-dashboard)
 - [API Reference](#-api-reference)
 - [Demo Vulnerability Lab](#-demo-vulnerability-lab)
 - [Deployment Guide](#-deployment-guide)
@@ -208,22 +209,29 @@ Base REST API URL: `http://<HOST>:8000/api/v1`
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/auth/login` | Public | Authenticate user and return JWT token |
-| `POST` | `/auth/register` | Public | Register new customer account |
-| `GET` | `/accounts/` | Authenticated | List accounts belonging to current user |
-| `GET` | `/accounts/{id}` | Authenticated | Retrieve detailed account info & balance |
-| `POST` | `/transactions/transfer` | Authenticated | Execute an atomic fund transfer |
-| `GET` | `/transactions/` | Authenticated | Search & filter paginated transaction history |
-| `GET` | `/beneficiaries/` | Authenticated | Retrieve beneficiary list |
-| `POST` | `/beneficiaries/` | Authenticated | Save a new transfer recipient |
-| `GET` | `/profile/me` | Authenticated | Retrieve current user profile |
-| `PUT` | `/profile/password` | Authenticated | Change user password |
-| `GET` | `/admin/stats` | Admin Only | View system-wide metrics |
-| `GET` | `/admin/audit-logs` | Admin Only | Inspect global audit trail |
-| `GET` | `/demo/sqli` | Public (Demo) | Simulated SQL Injection vulnerability |
-| `GET` | `/demo/xss` | Public (Demo) | Simulated Reflected XSS vulnerability |
-| `GET` | `/demo/path-traversal` | Public (Demo) | Simulated Path Traversal vulnerability |
-| `POST` | `/demo/brute-force` | Public (Demo) | Simulated Authentication Brute Force |
+| `POST` | `/auth/login` | ❌ | Obtain JWT token |
+| `POST` | `/auth/register` | ❌ | Create new account |
+| `GET` | `/accounts/` | ✅ | List user accounts |
+| `GET` | `/accounts/{id}` | ✅ | Account details |
+| `POST` | `/transactions/transfer` | ✅ | Fund transfer |
+| `GET` | `/transactions/` | ✅ | Transaction history |
+| `GET` | `/beneficiaries/` | ✅ | List beneficiaries |
+| `POST` | `/beneficiaries/` | ✅ | Add beneficiary |
+| `GET` | `/profile/me` | ✅ | Get profile |
+| `PUT` | `/profile/password` | ✅ | Change password |
+| `GET` | `/admin/stats` | 🔐ADMIN | System statistics |
+| `GET` | `/admin/audit-logs` | 🔐ADMIN | Audit trail |
+| `GET` | `/soc/threats` | 🔐ADMIN | Threat events stream (PostgreSQL) |
+| `GET` | `/soc/blocked-ips` | 🔐ADMIN | List active quarantined IPs |
+| `POST` | `/soc/block-ip` | 🔐ADMIN | Quarantine IP (DB + iptables DROP) |
+| `POST` | `/soc/unblock-ip` | 🔐ADMIN | Remove IP from quarantine |
+| `GET` | `/soc/waf-alerts` | 🔐ADMIN | Coraza/Caddy WAF alert log |
+| `GET` | `/soc/health-check` | ❌ | Infra TCP socket ping tests |
+| `GET` | `/soc/banking-kpis` | 🔐ADMIN | Unified Banking + SOC KPIs |
+| `GET` | `/demo/sqli` | ❌ | SQLi demo (DEMO_MODE) |
+| `GET` | `/demo/xss` | ❌ | XSS demo (DEMO_MODE) |
+| `GET` | `/demo/path-traversal` | ❌ | LFI demo (DEMO_MODE) |
+| `POST` | `/demo/brute-force` | ❌ | Auth brute demo |
 
 > [!TIP]
 > Interactive **Swagger UI** documentation is accessible at `http://<HOST>:8000/docs` when `DEMO_MODE=true`.

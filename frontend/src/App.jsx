@@ -9,6 +9,7 @@ import { Register } from './pages/Register';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { Dashboard } from './pages/Dashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { SOCDashboard } from './pages/SOCDashboard';
 import { Accounts } from './pages/Accounts';
 import { Transfer } from './pages/Transfer';
 import { Transactions } from './pages/Transactions';
@@ -24,6 +25,12 @@ const DashboardRedirect = () => {
     return <AdminDashboard />;
   }
   return <Dashboard />;
+};
+
+const AdminOnly = ({ children }) => {
+  const { user } = useAuth();
+  if (user?.role !== 'ADMIN') return <Navigate to="/" replace />;
+  return children;
 };
 
 const ProtectedLayout = ({ children }) => {
@@ -69,6 +76,7 @@ export default function App() {
           <Route path="/" element={<ProtectedLayout><DashboardRedirect /></ProtectedLayout>} />
           <Route path="/dashboard" element={<ProtectedLayout><DashboardRedirect /></ProtectedLayout>} />
           <Route path="/admin-dashboard" element={<ProtectedLayout><AdminDashboard /></ProtectedLayout>} />
+          <Route path="/admin/soc" element={<ProtectedLayout><AdminOnly><SOCDashboard /></AdminOnly></ProtectedLayout>} />
           <Route path="/accounts" element={<ProtectedLayout><Accounts /></ProtectedLayout>} />
           <Route path="/transfer" element={<ProtectedLayout><Transfer /></ProtectedLayout>} />
           <Route path="/transactions" element={<ProtectedLayout><Transactions /></ProtectedLayout>} />

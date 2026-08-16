@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Wallet, Send, History, Users, User, Shield, FileText } from 'lucide-react';
+import { LayoutDashboard, Wallet, Send, History, Users, User, Shield, FileText, Terminal } from 'lucide-react';
 
 export const Sidebar = () => {
   const { user } = useAuth();
@@ -9,10 +9,11 @@ export const Sidebar = () => {
 
   const navItems = isAdmin
     ? [
-        { name: 'CBS Admin Operations', path: '/admin-dashboard', icon: Shield, code: 'ADM-01' },
-        { name: 'All Accounts Inquiry', path: '/accounts', icon: Wallet, code: 'ACC-02' },
-        { name: 'System Transaction Ledger', path: '/transactions', icon: History, code: 'LDG-03' },
-        { name: 'Operator Profile', path: '/profile', icon: User, code: 'PRF-04' },
+        { name: 'CBS Admin Operations',    path: '/admin-dashboard', icon: Shield,   code: 'ADM-01' },
+        { name: 'SOC Command Center',       path: '/admin/soc',       icon: Terminal, code: 'SOC-02' },
+        { name: 'All Accounts Inquiry',     path: '/accounts',        icon: Wallet,   code: 'ACC-03' },
+        { name: 'System Transaction Ledger',path: '/transactions',    icon: History,  code: 'LDG-04' },
+        { name: 'Operator Profile',         path: '/profile',         icon: User,     code: 'PRF-05' },
       ]
     : [
         { name: 'CBS Dashboard Overview', path: '/dashboard', icon: LayoutDashboard, code: 'INQ-01' },

@@ -12,7 +12,7 @@ from app.core.logger import app_logger
 from app.api.middleware.logging_middleware import StructuredLoggingMiddleware
 from app.api.middleware.security_headers import SecurityHeadersMiddleware
 
-from app.api.routers import auth, accounts, transactions, beneficiaries, profile, notifications, demo, admin
+from app.api.routers import auth, accounts, transactions, beneficiaries, profile, notifications, demo, admin, soc
 from app.database.session import engine, Base
 
 # Create tables automatically on startup if using SQLite/local dev without migrations
@@ -28,7 +28,11 @@ app = FastAPI(
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS if isinstance(settings.BACKEND_CORS_ORIGINS, list) else [settings.BACKEND_CORS_ORIGINS],
+    allow_origins=settings.BACKEND_CORS_ORIGINS if isinstance(settings.BACKEND_CORS_ORIGINS, list) else [
+        "http://localhost:3000", "http://localhost:5173", "http://localhost:80", "http://localhost",
+        "http://192.168.20.10", "http://192.168.20.10:3000", "http://192.168.20.10:8000",
+        "http://192.168.10.10", "http://192.168.10.10:3000", "http://192.168.10.10:8000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -84,6 +88,7 @@ app.include_router(beneficiaries.router, prefix=api_v1)
 app.include_router(profile.router, prefix=api_v1)
 app.include_router(notifications.router, prefix=api_v1)
 app.include_router(admin.router, prefix=api_v1)
+app.include_router(soc.router, prefix=api_v1)
 
 # Include Demo Router (Handles DEMO_MODE checks internally)
 app.include_router(demo.router)
