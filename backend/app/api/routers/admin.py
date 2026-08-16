@@ -148,8 +148,15 @@ def update_user_status(
     return MessageResponse(message=f"User {target_user.username} active status set to {target_user.is_active}")
 
 @router.get("/audit-logs", response_model=List[AuditLogResponse])
-def get_all_audit_logs(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_all_audit_logs(
+    limit: int = 100,
+    offset: int = 0,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     check_admin(current_user)
+    limit = min(max(1, limit), 200)
+    offset = max(0, offset)
 
-    logs = db.query(AuditLog).order_by(AuditLog.created_at.desc()).limit(100).all()
+    logs = db.query(AuditLog).order_by(AuditLog.created_at.desc()).offset(offset).limit(limit).all()
     return logs
