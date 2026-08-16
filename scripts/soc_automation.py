@@ -151,17 +151,21 @@ def unblock_ip(ip: str) -> bool:
 def record_threat_event(conn, alert: dict):
     """Persist a threat event to PostgreSQL."""
     cur = conn.cursor()
+    src_ip = alert.get("source_ip") or alert.get("data", {}).get("srcip", "unknown")
+    threat_type = alert.get("threat_type") or alert.get("rule", {}).get("description", "UNKNOWN")
+    severity_val = alert.get("severity") or ("HIGH" if alert.get("rule", {}).get("level", 0) >= 8 else "MEDIUM")
+
     cur.execute("""
         INSERT INTO threat_events
             (source_ip, threat_type, severity, description, timestamp, raw_alert, status)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         RETURNING id
     """, (
-        alert.get("source_ip",   "unknown"),
-        alert.get("threat_type", "UNKNOWN"),
-        alert.get("severity",    "MEDIUM"),
-        alert.get("description", ""),
-        alert.get("timestamp",   datetime.now(timezone.utc)),
+        src_ip,
+        threat_type,
+        severity_val if severity_val in ("LOW", "MEDIUM", "HIGH", "CRITICAL") else "MEDIUM",
+        alert.get("description", threat_type),
+        alert.get("timestamp", datetime.now(timezone.utc)),
         json.dumps(alert),
         "DETECTED"
     ))
