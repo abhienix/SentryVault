@@ -73,13 +73,11 @@ export function GrafanaTopBar({ systemStatus = 'OPERATIONAL', lastUpdated, autoR
             {autoRefresh ? 'LIVE (5s)' : 'PAUSED'}
           </button>
 
-          {/* Banking Portal link */}
-          <a
-            href="/bank"
-            className="flex items-center gap-1 px-2.5 py-1 rounded border border-[#58a6ff]/40 bg-[#58a6ff]/10 text-[#58a6ff] hover:bg-[#58a6ff]/20 text-[11px] font-bold font-sans transition"
-          >
-            Banking App <ExternalLink size={11} />
-          </a>
+          {/* DMZ Node Indicator */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#0d1117] border border-[#2a2e37] text-[11px] font-mono text-[#8b949e]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#58a6ff]" />
+            <span>DMZ HOST: 192.168.10.10</span>
+          </div>
         </div>
       </div>
     </header>

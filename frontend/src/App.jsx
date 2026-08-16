@@ -67,37 +67,13 @@ export default function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-
           {/* Standalone Internal Security Operations Center (SOC) Application */}
           <Route path="/" element={<SOCDashboard />} />
           <Route path="/soc" element={<SOCDashboard />} />
           <Route path="/admin/soc" element={<SOCDashboard />} />
 
-          {/* Customer Banking Portal Routes */}
-          <Route path="/bank" element={<ProtectedLayout><DashboardRedirect /></ProtectedLayout>} />
-          <Route path="/bank/dashboard" element={<ProtectedLayout><DashboardRedirect /></ProtectedLayout>} />
-          <Route path="/bank/accounts" element={<ProtectedLayout><Accounts /></ProtectedLayout>} />
-          <Route path="/bank/transfer" element={<ProtectedLayout><Transfer /></ProtectedLayout>} />
-          <Route path="/bank/transactions" element={<ProtectedLayout><Transactions /></ProtectedLayout>} />
-          <Route path="/bank/beneficiaries" element={<ProtectedLayout><Beneficiaries /></ProtectedLayout>} />
-          <Route path="/bank/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
-
-          {/* Banking Operations & Admin Compatibility Routes */}
-          <Route path="/dashboard" element={<ProtectedLayout><DashboardRedirect /></ProtectedLayout>} />
-          <Route path="/admin-dashboard" element={<ProtectedLayout><AdminDashboard /></ProtectedLayout>} />
-          <Route path="/accounts" element={<ProtectedLayout><Accounts /></ProtectedLayout>} />
-          <Route path="/transfer" element={<ProtectedLayout><Transfer /></ProtectedLayout>} />
-          <Route path="/transactions" element={<ProtectedLayout><Transactions /></ProtectedLayout>} />
-          <Route path="/beneficiaries" element={<ProtectedLayout><Beneficiaries /></ProtectedLayout>} />
-          <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
-          <Route path="/demo-console" element={<ProtectedLayout><DemoConsole /></ProtectedLayout>} />
-
-          {/* 404 Route */}
-          <Route path="*" element={<ProtectedLayout><NotFound /></ProtectedLayout>} />
+          {/* Fallback to SOC Dashboard */}
+          <Route path="*" element={<SOCDashboard />} />
         </Routes>
       </Router>
     </AuthProvider>
