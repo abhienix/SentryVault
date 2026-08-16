@@ -86,7 +86,10 @@ export function SOCDashboard() {
     }
   }, []);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => {
+    document.title = "SentryVault SOC | Security Operations Console";
+    fetchAll();
+  }, [fetchAll]);
 
   useEffect(() => {
     const id = setInterval(() => {
