@@ -19,6 +19,14 @@ def add_beneficiary(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    # Check if account belongs to self
+    own_acc = db.query(Account).filter(
+        Account.user_id == current_user.id,
+        Account.account_number == b_in.account_number
+    ).first()
+    if own_acc:
+        raise HTTPException(status_code=400, detail="Cannot add your own account as a beneficiary")
+
     # Check duplicate beneficiary
     existing = db.query(Beneficiary).filter(
         Beneficiary.user_id == current_user.id,
