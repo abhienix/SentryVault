@@ -43,68 +43,76 @@ function Section({ icon: Icon, title, color = '#00d4ff', children, action }) {
   );
 }
 
-// ─── Header ──────────────────────────────────────────────────────────────────
+// ─── Standalone SOC Top Navbar ───────────────────────────────────────────────
 function DashboardHeader({ autoRefresh, onToggleAuto, onRefresh, onExport, lastUpdated, refreshing }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-      <div>
+    <header className="border-b border-cyan-500/20 bg-[#060a14]/90 backdrop-blur sticky top-0 z-40 mb-6">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Brand & System Status */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg,#0a0f1e,#1e293b)', border: '1px solid #00d4ff44' }}>
-            <Shield size={20} className="text-cyan-400" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-cyan-500/10 border border-cyan-500/40 shadow-[0_0_15px_rgba(0,212,255,0.2)]">
+            <Shield size={22} className="text-cyan-400" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white tracking-tight">
-              SOC Command Center
-            </h1>
-            <p className="text-[11px] text-slate-500 font-mono">
-              SentryVault · Security Operations Center · Real-Time Intelligence
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-black text-white tracking-tight">
+                SentryVault SOC Command Center
+              </h1>
+              <span className="px-2 py-0.5 rounded text-[9px] font-bold font-mono bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                INTERNAL · 192.168.20.10
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono">
+              SIEM Log Monitor (Wazuh v4.14.7) · PostgreSQL Threat Store · SOAR Auto-Quarantine
             </p>
           </div>
         </div>
-        {lastUpdated && (
-          <p className="text-[10px] text-slate-600 mt-1 ml-13 font-mono">
-            Last updated: {lastUpdated.toLocaleTimeString()}
-          </p>
-        )}
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Live Auto-Refresh Toggle */}
+          <button
+            onClick={onToggleAuto}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition"
+            style={{
+              background: autoRefresh ? 'rgba(0,212,255,0.12)' : '#1e293b',
+              borderColor: autoRefresh ? 'rgba(0,212,255,0.4)' : '#334155',
+              color: autoRefresh ? '#00d4ff' : '#64748b',
+            }}>
+            {autoRefresh ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+            Live 5s
+          </button>
+
+          {/* Manual Refresh */}
+          <button
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 text-xs font-semibold transition">
+            <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+
+          {/* Export JSON / CSV */}
+          <button
+            onClick={() => onExport('json')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-xs transition">
+            <Download size={13} /> JSON
+          </button>
+          <button
+            onClick={() => onExport('csv')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-xs transition">
+            <Download size={13} /> CSV
+          </button>
+
+          {/* Link to Banking Portal */}
+          <a
+            href="/bank"
+            className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/40 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-xs font-bold transition">
+            🏦 Core Banking App
+          </a>
+        </div>
       </div>
-
-      <div className="flex items-center gap-2 flex-wrap">
-        {/* Auto-refresh toggle */}
-        <button
-          onClick={onToggleAuto}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition"
-          style={{
-            background: autoRefresh ? '#00d4ff18' : '#1e293b',
-            borderColor: autoRefresh ? '#00d4ff44' : '#334155',
-            color: autoRefresh ? '#00d4ff' : '#64748b',
-          }}>
-          {autoRefresh ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
-          Live 5s
-        </button>
-
-        {/* Manual refresh */}
-        <button
-          onClick={onRefresh}
-          disabled={refreshing}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-600 text-slate-400 hover:text-white hover:border-slate-400 text-xs transition">
-          <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
-          Refresh
-        </button>
-
-        {/* Export */}
-        <button
-          onClick={() => onExport('json')}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-500 hover:text-white hover:border-slate-500 text-xs transition">
-          <Download size={13} /> Export JSON
-        </button>
-        <button
-          onClick={() => onExport('csv')}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-500 hover:text-white hover:border-slate-500 text-xs transition">
-          <Download size={13} /> Export CSV
-        </button>
-      </div>
-    </div>
+    </header>
   );
 }
 
