@@ -263,17 +263,40 @@ def get_waf_alerts(
     ]
 
 
+def ping_check(host: str, timeout: float = 2.0) -> dict:
+    """Fallback ICMP ping check if TCP port is unreachable."""
+    try:
+        t0 = time.monotonic()
+        res = subprocess.run(
+            ["ping", "-c", "1", "-w", "2", host],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        latency = round((time.monotonic() - t0) * 1000, 2)
+        if res.returncode == 0:
+            return {"connected": True, "latency_ms": latency}
+    except Exception as e:
+        pass
+    return {"connected": False, "latency_ms": None, "error": "Host unreachable"}
+
+
 # ─── GET /soc/health-check ────────────────────────────────────────────────────
 
 @router.get("/health-check", response_model=SystemHealthResponse)
 def system_health_check():
-    """Public endpoint: TCP socket checks for all infrastructure services."""
+    """Public endpoint: TCP socket & ping checks for all infrastructure services."""
+    dmz_res = tcp_check("192.168.10.10", 8000)
+    if not dmz_res.get("connected"):
+        # Fallback to ICMP ping check to DMZ Host
+        dmz_res = ping_check("192.168.10.10")
+
     checks = [
         ("MySQL DB",        tcp_check("127.0.0.1", 3306)),
         ("PostgreSQL SOC",  check_soc_db_health()),
         ("Wazuh Manager",   tcp_check("127.0.0.1", 55000)),
         ("Internal Host",   tcp_check("192.168.20.10", 8000)),
-        ("DMZ FastAPI",     tcp_check("192.168.10.10", 8000)),
+        ("DMZ Host",        dmz_res),
     ]
 
     services = [
