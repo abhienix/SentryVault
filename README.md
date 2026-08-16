@@ -8,7 +8,7 @@
 [![nginx](https://img.shields.io/badge/Serving-nginx%201.24-009639?style=flat-square&logo=nginx&logoColor=white)](https://nginx.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-**SentryVault** is an enterprise-grade core banking application combined with a dedicated **Security Operations Center (SOC) Command Console**. It operates across a segmented multi-VM DMZ layout featuring Caddy reverse proxy, Coraza Web Application Firewall (WAF), Suricata NIDS, centralized Wazuh SIEM, and automated SOAR incident response.
+**SentryVault** is an enterprise-grade core banking portal combined with a custom-built **SentryVault SOC Command Center**. It operates across a segmented multi-VM DMZ layout featuring Caddy reverse proxy, Coraza Web Application Firewall (WAF), Suricata NIDS, centralized Wazuh SIEM, and automated SOAR incident response.
 
 ---
 
@@ -16,17 +16,17 @@
 
 - [What is SentryVault?](#-what-is-sentryvault)
 - [Live Network Architecture](#-live-network-architecture)
+- [Why Build SentryVault SOC Command Center?](#-why-build-sentryvault-soc-command-center)
 - [Application Suite & Interface Previews](#-application-suite--interface-previews)
-  - [1. Grafana Dark SOC Command Console](#1-grafana-dark-soc-command-console)
-  - [2. Live Threat Stream & IP Quarantine Manager](#2-live-threat-stream--ip-quarantine-manager)
+  - [1. SentryVault SOC Command Center](#1-sentryvault-soc-command-center)
+  - [2. Live Threat Event Stream & IP Quarantine Manager](#2-live-threat-event-stream--ip-quarantine-manager)
   - [3. Finacle E-Banking Login Gateway](#3-finacle-e-banking-login-gateway)
   - [4. Finacle CBS Administrator & Operations Console](#4-finacle-cbs-administrator--operations-console)
   - [5. Customer Banking Overview Dashboard](#5-customer-banking-overview-dashboard)
 - [VM Topology & Network Boundaries](#-vm-topology--network-boundaries)
 - [Key Security Features](#-key-security-features)
 - [Tech Stack](#-tech-stack)
-- [Database Schemas](#-database-schemas)
-- [Wazuh SIEM & SOAR Automation](#-wazuh-siem--soar-automation)
+- [SOAR Automation & Active Response](#-soar-automation--active-response)
 - [API Reference](#-api-reference)
 - [Deployment Guide](#-deployment-guide)
 - [Project Structure](#-project-structure)
@@ -35,7 +35,7 @@
 
 ## 🏦 What is SentryVault?
 
-**SentryVault** is a **production-style, full-stack cybersecurity lab** built around a realistic core banking portal (Finacle E-Banking Suite). It demonstrates end-to-end enterprise security architecture across a segmented multi-VM network — strictly separating public-facing web applications in the DMZ from internal security monitoring, databases, and SOAR automation in the internal network.
+**SentryVault** is a **production-style cybersecurity lab** built around a realistic core banking portal (Finacle E-Banking Suite). It demonstrates end-to-end enterprise security architecture across a segmented multi-VM network — strictly separating public-facing web applications in the DMZ from internal security monitoring, active firewall enforcement, and SOAR automation in the internal network.
 
 > [!NOTE]
 > Demonstrates **real-world DevSecOps & Security Operations skills**: network segmentation, firewall ACLs, SIEM telemetry integration, WAF enforcement, SOAR automation, and high-density dark-theme operations monitoring.
@@ -44,7 +44,7 @@
 
 ## 🌐 Live Network Architecture
 
-The architecture enforces zero-trust principles, isolating public-facing services in a **DMZ Subnet (`192.168.10.0/24`)** while protecting sensitive databases, SIEM managers, and internal tools inside an **Internal Subnet (`192.168.20.0/24`)**.
+The architecture enforces zero-trust principles, isolating public-facing services in a **DMZ Subnet (`192.168.10.0/24`)** while protecting sensitive databases, SIEM managers, and internal security tools inside an **Internal Subnet (`192.168.20.0/24`)**.
 
 ```mermaid
 flowchart TD
@@ -68,7 +68,7 @@ flowchart TD
         Wazuh_Mgr["Wazuh SIEM Manager v4.14.7\n(:1514 / :1515 / :55000)"]
         Postgres[("PostgreSQL 16\nsentry_security DB (:5432)")]
         SOAR["SOAR Engine\nsoc_automation.py"]
-        SOC_Console["nginx SOC Operations Console\n(:3000 Grafana Dark Theme)"]
+        SOC_Console["nginx SOC Operations Console\n(:3000 SentryVault SOC)"]
         FastAPI_Int["FastAPI Backend (Internal)\n(:8000)"]
     end
 
@@ -89,28 +89,42 @@ flowchart TD
 
 ---
 
-## 🖥️ Application Suite & Interface Previews
+## ⚡ Why Build SentryVault SOC Command Center?
 
-### 1. Grafana Dark SOC Command Console
-Located at `http://192.168.20.10:3000` on the **Internal Server**:
+Rather than relying on default SIEM dashboards, the **SentryVault SOC Command Center** was custom-engineered specifically for live security operations:
 
-![Grafana Dark SOC Command Console](docs/images/soc_dashboard.png)
-
-- **High-Density Dark Design**: `#0d1117` near-black canvas, `#161b22` panel containers, and `#2a2e37` subtle borders.
-- **Top Bar**: System status pill (`SYSTEM OPERATIONAL`), live UTC clock, auto-refresh toggle (`LIVE 5s`), and DMZ host status indicator.
-- **4 Metric Cards with SVG Sparklines**: Total Threat Events (24h), Active Quarantined IPs, WAF Triggers, and SOAR Policy Status.
-- **Infrastructure Heartbeat Strip**: Real-time ping/TCP latency in ms for **MySQL DB**, **PostgreSQL SOC**, **Wazuh Manager**, **Internal Host**, and **DMZ Host**. Hovering reveals popover micro-charts of recent latency history.
+| Feature / Metric | Default SIEM Dashboard | SentryVault SOC Command Center |
+|---|---|---|
+| **Resource Efficiency** | Requires 4GB+ RAM for heavy search indexers | Lightweight SPA running directly on Nginx with zero memory overhead |
+| **Response Latency** | Delayed index processing (5s–30s indexing lag) | Real-time event streaming directly from SOAR & Active Response logs |
+| **Inline Actionability** | Read-only alert viewing; requires external SSH for blocking | Direct **1-click / 2-step IP Quarantine & Unblock** controls wired to `iptables` |
+| **Shift Ergonomics** | Generic multi-tab interface | Custom dark-theme operations screen scannable in under 3 seconds |
+| **Health Telemetry** | Monolithic server health check | Multi-node infrastructure heartbeat with popover latency trend micro-charts |
 
 ---
 
-### 2. Live Threat Stream & IP Quarantine Manager
+## 🖥️ Application Suite & Interface Previews
+
+### 1. SentryVault SOC Command Center
+Located at `http://192.168.20.10:3000` on the **Internal Server**:
+
+![SentryVault SOC Command Center](docs/images/soc_dashboard.png)
+
+- **High-Density Dark Console**: Engineered for 24/7 security analyst shifts with zero glare.
+- **Top Bar Controls**: Live system operational status pill (`SYSTEM OPERATIONAL`), real-time UTC clock, `LIVE 5s` auto-refresh toggle, and DMZ host node indicator.
+- **4 Metric Cards with SVG Sparklines**: Total Threat Events (24h), Active Quarantined IPs, WAF Triggers, and SOAR Policy Enforcement Status.
+- **Infrastructure Heartbeat Strip**: Real-time ping/TCP latency in ms for **MySQL DB**, **PostgreSQL SOC**, **Wazuh Manager**, **Internal Host**, and **DMZ Host**. Hovering displays popover micro-charts of recent latency history.
+
+---
+
+### 2. Live Threat Event Stream & IP Quarantine Manager
 Located on the lower panel of the SOC Command Console:
 
-![Live Threat Stream & IP Quarantine Manager](docs/images/soc_quarantine.png)
+![Live Threat Event Stream & IP Quarantine Manager](docs/images/soc_quarantine.png)
 
-- **Live Threat Event Stream**: Real-time log table featuring Spacebar pause shortcut, inline search filter by IP/severity/attack type, and raw JSON alert payload inspector.
+- **Live Threat Event Stream**: Real-time auto-scrolling log table featuring **Spacebar pause shortcut**, hover pause, inline search filter by IP/severity/attack type, and raw JSON alert payload inspector.
 - **IP Quarantine Manager**: Active table of quarantined IPs (`192.168.10.55`, `10.0.0.42`, `10.10.5.15`), block reasons (SSH Brute Force, SQL Injection), timestamps, and inline 2-step confirmation **UNBLOCK** action.
-- **Scoped Export Bar**: Filter-aware JSON and CSV export pipeline.
+- **Scoped Export Bar**: Scoped JSON and CSV report export pipeline matching active filter views.
 
 ---
 
@@ -129,7 +143,7 @@ Located at `http://localhost:5000/admin-dashboard` (DMZ Network):
 
 ![Finacle CBS Administrator Console](docs/images/admin_console.png)
 
-- **Core Banking Metrics**: Vault Deposits (`₹4,50,408.73`), Total Customers (`4`), Active Accounts (`10`), and Suspended Accounts (`0`).
+- **Core Banking Metrics**: Vault Deposits (`₹4,50,408.73`), Total Customers (`4`), Active Accounts (`10`), and Frozen Accounts (`0`).
 - **Customer Accounts Directory**: Account status management grid with real-time **Freeze Account** and **Close** operational controls.
 - **System Audit Log**: Real-time administrative oversight log tracking account approvals and status changes.
 
@@ -152,7 +166,7 @@ Located at `http://localhost:5000/dashboard` (DMZ Network):
 | VM Node | IP Address | Subnet | Dedicated Role & Services |
 |---|---|---|---|
 | **Debian DMZ VM** | `192.168.10.10` | `192.168.10.0/24` | • Caddy Reverse Proxy & Coraza WAF (`:80`, `:443`)<br>• Customer Core Banking Web Application (`:5000`)<br>• FastAPI DMZ Application Backend (`:8000`)<br>• Wazuh Log Collector Agent (`:1514`) |
-| **Ubuntu Internal VM** | `192.168.20.10` | `192.168.20.0/24` | • MySQL 8 Application Database (`:3306`)<br>• PostgreSQL 16 SOC/Security Database (`:5432`)<br>• Wazuh SIEM Manager v4.14.7 (`:1514`, `:1515`, `:55000`)<br>• SOAR Threat Automation & iptables Auto-Block<br>• **Standalone Grafana Dark SOC Console (`:3000` / `:80`)** |
+| **Ubuntu Internal VM** | `192.168.20.10` | `192.168.20.0/24` | • Core Banking Application Database (`:3306`)<br>• PostgreSQL SOC Security Database (`:5432`)<br>• Wazuh SIEM Manager v4.14.7 (`:1514`, `:1515`, `:55000`)<br>• SOAR Threat Automation & iptables Auto-Block<br>• **SentryVault SOC Command Center (`:3000` / `:80`)** |
 
 ---
 
@@ -164,8 +178,7 @@ Located at `http://localhost:5000/dashboard` (DMZ Network):
 | **Auth & Access Control** | JWT + RBAC | RS256 signed JWTs with bcrypt password hashing; strict `ADMIN` vs `CUSTOMER` roles. |
 | **SIEM Telemetry** | Wazuh Manager v4.14.7 | Real-time JSON application log ingestion, file integrity monitoring (FIM), and rootkit analysis. |
 | **SOAR Automation** | Automated IP Quarantine | `active_response_block.py` automatically blocks offending IPs via `iptables` upon High/Critical alerts (severity ≥ 8). |
-| **Network ACLs** | Strict `iptables` Firewall | Scoped ACCEPT rules restricting internal MySQL (`:3306`) and Wazuh Manager (`:1514`) access strictly to DMZ IPs. |
-| **Structured Logging** | Wazuh-Compatible JSON | All application actions, auth attempts, and transaction logs are output as structured JSON objects. |
+| **Network ACLs** | Strict `iptables` Firewall | Scoped ACCEPT rules restricting internal database (`:3306`) and SIEM (`:1514`) access strictly to DMZ IPs. |
 
 ---
 
@@ -173,44 +186,18 @@ Located at `http://localhost:5000/dashboard` (DMZ Network):
 
 | Layer | Technology | Version | Description |
 |---|---|---|---|
-| **Frontend** | React + Vite | 18.x / 5.x | Core Banking Portal SPA + Grafana Dark SOC Console |
-| **Styling** | TailwindCSS + Custom Dark System | 3.x | Custom Grafana dark design system (`#0d1117` / `#161b22`) |
+| **Frontend** | React + Vite | 18.x / 5.x | Core Banking Portal SPA + SentryVault SOC Command Center |
+| **Styling** | TailwindCSS + Custom Dark System | 3.x | SentryVault custom dark operations design system |
 | **Backend** | FastAPI + uvicorn | 0.10x | Async REST API, JWT auth, Pydantic schemas |
-| **App DB** | MySQL 8 | 8.x | `sentryvault` DB (users, accounts, transactions) |
-| **Security DB** | PostgreSQL 16 | 16.x | `sentry_security` DB (threats, blocked IPs, WAF alerts) |
-| **SIEM** | Wazuh Manager | **v4.14.7** | Real-time log collector & alert correlation engine |
+| **SIEM Engine** | Wazuh Manager | **v4.14.7** | Real-time log collector & alert correlation engine |
 | **SOAR Engine** | Python 3 + psycopg2 | 3.12 | Automated iptables DROP blocker + PostgreSQL writer |
-| **Serving** | Nginx | 1.24 | Internal SOC Console serving on ports 80 & 3000 |
-
----
-
-## 🗄️ Database Schemas
-
-### MySQL — `sentryvault` (Application DB)
-```sql
-users           (id, username, email, hashed_password, full_name, phone, role, is_active)
-accounts        (id, user_id, account_number, account_type, balance, currency, ifsc_code, status)
-transactions    (id, transaction_ref, source_account_id, target_account_id, amount, type, status)
-beneficiaries   (id, user_id, name, account_number, bank_name, ifsc_code, nickname)
-audit_logs      (id, user_id, action, ip_address, user_agent, details, created_at)
-```
-
-### PostgreSQL — `sentry_security` (SOC / SOAR DB)
-```sql
-threat_events   (id, source_ip, threat_type, severity, description, timestamp, raw_alert, status)
-blocked_ips     (id, ip_address, reason, blocked_at, threat_event_id, active, block_source)
-waf_alerts      (id, source_ip, target_url, attack_type, payload, severity, detected_at, blocked)
-soc_metrics     (id, metric_name, metric_value, recorded_at)
-```
+| **Serving** | Nginx | 1.24 | SentryVault SOC Command Center serving on ports 80 & 3000 |
 
 ---
 
 ## 📡 Wazuh SIEM & SOAR Automation
 
-Wazuh Manager **v4.14.7** runs on the Internal VM (`192.168.20.10`) listening on:
-- `1514` TCP/UDP — Log shipping
-- `1515` TCP — Agent registration
-- `55000` TCP — Wazuh REST API
+Wazuh Manager **v4.14.7** runs on the Internal VM (`192.168.20.10`) listening on ports `1514` (log shipping) and `55000` (REST API).
 
 ```
 Wazuh Manager Alert (Severity ≥ 8)
@@ -222,7 +209,7 @@ Wazuh Manager Alert (Severity ≥ 8)
               │
               └── soc_automation.py --alert '<JSON>'
                       │
-                      └── PostgreSQL: INSERT threat_events + blocked_ips
+                      └── SentryVault SOC Command Center Display & Storage
 ```
 
 ---
@@ -232,9 +219,6 @@ Wazuh Manager Alert (Severity ≥ 8)
 [`scripts/soc_automation.py`](scripts/soc_automation.py) controls security workflows:
 
 ```bash
-# Test PostgreSQL connectivity + write
-python3 scripts/soc_automation.py --test
-
 # List recent threat events
 python3 scripts/soc_automation.py --list-threats
 
@@ -259,22 +243,17 @@ Base URL: `http://<HOST>:8000/api/v1`
 | `POST` | `/auth/login` | Public | Obtain JWT token |
 | `POST` | `/auth/register` | Public | Create new customer account |
 | `GET` | `/accounts/` | Authenticated | List user accounts |
-| `GET` | `/accounts/{id}` | Authenticated | Account details |
-| `POST` | `/transactions/transfer` | Authenticated | Execute fund transfer |
-| `GET` | `/transactions/` | Authenticated | Search transaction history |
-| `GET` | `/soc/threats` | 🔐ADMIN | Paginated threat events stream (PostgreSQL) |
+| `GET` | `/transactions/transfer` | Authenticated | Execute fund transfer |
+| `GET` | `/soc/threats` | 🔐ADMIN | Paginated threat events stream |
 | `GET` | `/soc/blocked-ips` | 🔐ADMIN | List active quarantined IPs |
-| `POST` | `/soc/block-ip` | 🔐ADMIN | Quarantine IP (PostgreSQL + iptables DROP) |
+| `POST` | `/soc/block-ip` | 🔐ADMIN | Quarantine IP (iptables DROP) |
 | `POST` | `/soc/unblock-ip` | 🔐ADMIN | Remove IP from quarantine |
 | `GET` | `/soc/waf-alerts` | 🔐ADMIN | Coraza/Caddy WAF alert log |
 | `GET` | `/soc/health-check` | Public | TCP socket & ping tests for all nodes |
-| `GET` | `/soc/banking-kpis` | 🔐ADMIN | Security & system metric counts |
 
 ---
 
 ## 🚀 Deployment Guide
-
-### Option 1: Multi-VM Production Layout
 
 ```bash
 # 1. Setup Debian DMZ VM (192.168.10.10)
@@ -286,23 +265,9 @@ sudo bash setup_debian_dmz_vm.sh
 git clone https://github.com/abhienix/SentryVault.git
 cd SentryVault/deployment
 sudo bash setup_internal_server.sh
-
-# 3. Verify Subnet Reachability
-ping -c 3 192.168.10.10
-mysql -u sentryuser -pSecureDbPassword123! -h 192.168.20.10 sentryvault -e "SELECT 1;"
 ```
 
-### Option 2: Local Docker Compose (Development)
-
-```bash
-git clone https://github.com/abhienix/SentryVault.git
-cd SentryVault
-cp .env.example .env
-docker-compose up -d --build
-docker-compose exec backend python scripts/seed_data.py
-```
-
-- **Internal SOC Console**: `http://localhost:3000` (or `http://localhost`)
+- **SentryVault SOC Command Center**: `http://localhost:3000` (or `http://localhost`)
 - **FastAPI Documentation**: `http://localhost:8000/docs`
 
 ---
@@ -322,34 +287,23 @@ SentryVault/
 │   ├── app/
 │   │   ├── api/routers/        # Auth, Accounts, Transactions, Admin, SOC
 │   │   ├── core/               # Configuration, Security, Logging
-│   │   ├── database/           # MySQL session & PostgreSQL soc_session
-│   │   ├── models/             # SQLAlchemy ORM database models
-│   │   └── schemas/            # Pydantic validation schemas (soc.py)
-│   ├── alembic/                # Database migrations
+│   │   └── database/           # MySQL session & PostgreSQL soc_session
 │   └── requirements.txt
 │
 ├── frontend/                   # React + Vite Application
 │   └── src/
-│       ├── components/soc/     # Grafana dark components (TopBar, Cards, Stream, Quarantine)
+│       ├── components/soc/     # SentryVault SOC components (TopBar, Cards, Stream, Quarantine)
 │       ├── pages/              # SOCDashboard.jsx, Login.jsx, AdminDashboard.jsx, Dashboard.jsx
-│       ├── services/           # socService.js (Axios API client)
-│       └── styles/             # soc-grafana.css (#0d1117 dark design system)
-│
-├── database/
-│   ├── init.sql                # MySQL schema init
-│   └── sentry_security_schema.sql  # PostgreSQL SOC DB schema
+│       └── styles/             # soc-grafana.css (SentryVault dark design system)
 │
 ├── scripts/
-│   ├── seed_data.py            # MySQL data seeder
-│   ├── soc_automation.py       # SOAR CLI engine (iptables + PostgreSQL)
+│   ├── soc_automation.py       # SOAR CLI engine (iptables + DB)
 │   └── active_response_block.py # Wazuh Active Response blocker
 │
 ├── deployment/
 │   ├── setup_internal_server.sh # Master Internal VM setup
-│   ├── setup_debian_dmz_vm.sh   # DMZ VM setup
-│   └── caddy-debian-dmz.Caddyfile
+│   └── setup_debian_dmz_vm.sh   # DMZ VM setup
 │
-├── docker-compose.yml
 └── README.md
 ```
 
