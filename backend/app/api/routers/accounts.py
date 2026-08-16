@@ -28,4 +28,6 @@ def get_account_by_number(account_number: str, current_user: User = Depends(get_
     account = db.query(Account).filter(Account.account_number == account_number).first()
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
+    if account.user_id != current_user.id and current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Access forbidden to requested account details")
     return account
