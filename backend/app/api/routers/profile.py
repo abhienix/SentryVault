@@ -44,6 +44,9 @@ def change_password(
     if not verify_password(pwd_in.current_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
 
+    if pwd_in.current_password == pwd_in.new_password:
+        raise HTTPException(status_code=400, detail="New password cannot be identical to current password")
+
     current_user.hashed_password = get_password_hash(pwd_in.new_password)
 
     audit = AuditLog(
