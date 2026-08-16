@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   RefreshCw, Download, ToggleLeft, ToggleRight,
-  Shield, Activity, AlertTriangle, Terminal
+  Shield, Activity, AlertTriangle, Terminal, ExternalLink
 } from 'lucide-react';
 
-import { BankingKPIBar }          from '../components/soc/BankingKPIBar';
+import { SOCMetricCards }          from '../components/soc/SOCMetricCards';
 import { HealthHeartbeatGrid }     from '../components/soc/HealthHeartbeatGrid';
 import { ThreatStreamFeed }        from '../components/soc/ThreatStreamFeed';
 import { QuarantineManager }       from '../components/soc/QuarantineManager';
@@ -18,23 +18,16 @@ import {
   getWafAlerts,
 } from '../services/socService';
 
-// ─── Section wrapper ─────────────────────────────────────────────────────────
-function Section({ icon: Icon, title, color = '#00d4ff', children, action }) {
+// ─── Section Card Wrapper ───────────────────────────────────────────────────
+function SectionCard({ icon: Icon, title, iconColor = 'text-blue-600', children, action }) {
   return (
-    <div className="rounded-2xl border overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg,#0a0f1e 0%,#0f172a 100%)',
-        borderColor: color + '33',
-        boxShadow: `0 0 30px ${color}0a`,
-      }}>
-      <div className="flex items-center justify-between px-5 py-3 border-b"
-        style={{ borderColor: color + '22', background: color + '08' }}>
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-slate-50/50">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background: color + '22', border: `1px solid ${color}44` }}>
-            <Icon size={14} style={{ color }} />
+          <div className="p-1.5 rounded-lg bg-slate-100 border border-slate-200">
+            <Icon size={16} className={iconColor} />
           </div>
-          <span className="text-sm font-bold text-white">{title}</span>
+          <h2 className="text-sm font-bold text-slate-900">{title}</h2>
         </div>
         {action}
       </div>
@@ -43,51 +36,52 @@ function Section({ icon: Icon, title, color = '#00d4ff', children, action }) {
   );
 }
 
-// ─── Standalone SOC Top Navbar ───────────────────────────────────────────────
-function DashboardHeader({ autoRefresh, onToggleAuto, onRefresh, onExport, lastUpdated, refreshing }) {
+// ─── Clean Light Top Navbar ─────────────────────────────────────────────────
+function DashboardNavbar({ autoRefresh, onToggleAuto, onRefresh, onExport, refreshing }) {
   return (
-    <header className="border-b border-cyan-500/20 bg-[#060a14]/90 backdrop-blur sticky top-0 z-40 mb-6">
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Brand & System Status */}
+        {/* Brand & Subtitle */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-cyan-500/10 border border-cyan-500/40 shadow-[0_0_15px_rgba(0,212,255,0.2)]">
-            <Shield size={22} className="text-cyan-400" />
+          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-sm">
+            <Shield size={22} className="text-emerald-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-black text-white tracking-tight">
+              <h1 className="text-lg font-bold text-slate-900 tracking-tight">
                 SentryVault SOC Command Center
               </h1>
-              <span className="px-2 py-0.5 rounded text-[9px] font-bold font-mono bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
-                INTERNAL · 192.168.20.10
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+                INTERNAL NETWORK · 192.168.20.10
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono">
-              SIEM Log Monitor (Wazuh v4.14.7) · PostgreSQL Threat Store · SOAR Auto-Quarantine
+            <p className="text-xs text-slate-500 font-sans">
+              SIEM Monitoring (Wazuh v4.14.7) · Threat Event Log (PostgreSQL) · SOAR IP Quarantine
             </p>
           </div>
         </div>
 
-        {/* Action Controls */}
+        {/* Quick Actions */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Live Auto-Refresh Toggle */}
           <button
             onClick={onToggleAuto}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition"
-            style={{
-              background: autoRefresh ? 'rgba(0,212,255,0.12)' : '#1e293b',
-              borderColor: autoRefresh ? 'rgba(0,212,255,0.4)' : '#334155',
-              color: autoRefresh ? '#00d4ff' : '#64748b',
-            }}>
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition ${
+              autoRefresh
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                : 'bg-slate-100 border-slate-300 text-slate-600'
+            }`}
+          >
             {autoRefresh ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
             Live 5s
           </button>
 
-          {/* Manual Refresh */}
+          {/* Refresh Now */}
           <button
             onClick={onRefresh}
             disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 text-xs font-semibold transition">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold transition shadow-sm"
+          >
             <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
             Refresh
           </button>
@@ -95,20 +89,23 @@ function DashboardHeader({ autoRefresh, onToggleAuto, onRefresh, onExport, lastU
           {/* Export JSON / CSV */}
           <button
             onClick={() => onExport('json')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-xs transition">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 text-xs font-medium transition"
+          >
             <Download size={13} /> JSON
           </button>
           <button
             onClick={() => onExport('csv')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-xs transition">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 text-xs font-medium transition"
+          >
             <Download size={13} /> CSV
           </button>
 
-          {/* Link to Banking Portal */}
+          {/* Link to Core Banking App */}
           <a
             href="/bank"
-            className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/40 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-xs font-bold transition">
-            🏦 Core Banking App
+            className="ml-1 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-sm"
+          >
+            🏦 Banking App <ExternalLink size={12} />
           </a>
         </div>
       </div>
@@ -116,7 +113,7 @@ function DashboardHeader({ autoRefresh, onToggleAuto, onRefresh, onExport, lastU
   );
 }
 
-// ─── Export helpers ───────────────────────────────────────────────────────────
+// ─── Export Helper ───────────────────────────────────────────────────────────
 function exportData(data, format, filename) {
   let content, type, ext;
   if (format === 'csv') {
@@ -134,18 +131,17 @@ function exportData(data, format, filename) {
   URL.revokeObjectURL(url);
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Main SOC Dashboard Page ──────────────────────────────────────────────────
 export function SOCDashboard() {
-  const [kpis,       setKpis]       = useState(null);
-  const [health,     setHealth]     = useState(null);
-  const [threats,    setThreats]    = useState([]);
-  const [blocked,    setBlocked]    = useState([]);
-  const [wafAlerts,  setWafAlerts]  = useState([]);
+  const [metrics,   setMetrics]   = useState(null);
+  const [health,    setHealth]    = useState(null);
+  const [threats,   setThreats]   = useState([]);
+  const [blocked,   setBlocked]   = useState([]);
+  const [wafAlerts, setWafAlerts] = useState([]);
 
-  const [loading,    setLoading]    = useState({ kpis: true, health: true, threats: true, blocked: true, waf: true });
-  const [refreshing, setRefreshing] = useState(false);
+  const [loading,     setLoading]     = useState({ metrics: true, health: true, threats: true, blocked: true, waf: true });
+  const [refreshing,  setRefreshing]  = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState(null);
 
   const autoRef = useRef(autoRefresh);
   autoRef.current = autoRefresh;
@@ -161,132 +157,135 @@ export function SOCDashboard() {
         getWafAlerts({ limit: 30 }),
       ]);
 
-      if (kpisRes.status === 'fulfilled')    setKpis(kpisRes.value.data);
+      if (kpisRes.status === 'fulfilled')    setMetrics(kpisRes.value.data);
       if (healthRes.status === 'fulfilled')  setHealth(healthRes.value.data);
       if (threatsRes.status === 'fulfilled') setThreats(threatsRes.value.data);
       if (blockedRes.status === 'fulfilled') setBlocked(blockedRes.value.data);
       if (wafRes.status === 'fulfilled')     setWafAlerts(wafRes.value.data);
 
-      setLoading({ kpis: false, health: false, threats: false, blocked: false, waf: false });
-      setLastUpdated(new Date());
+      setLoading({ metrics: false, health: false, threats: false, blocked: false, waf: false });
     } finally {
       if (showSpinner) setRefreshing(false);
     }
   }, []);
 
-  // Initial load
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // Auto-refresh every 5s
   useEffect(() => {
     const id = setInterval(() => { if (autoRef.current) fetchAll(); }, 5000);
     return () => clearInterval(id);
   }, [fetchAll]);
 
-  const handleExport = (format) => {
-    exportData(threats, format, `soc_threats_${Date.now()}`);
-  };
-
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg,#050810 0%,#0a0f1e 100%)' }}>
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+      {/* Top Navbar */}
+      <DashboardNavbar
+        autoRefresh={autoRefresh}
+        onToggleAuto={() => setAutoRefresh(p => !p)}
+        onRefresh={() => fetchAll(true)}
+        onExport={format => exportData(threats, format, `soc_threats_${Date.now()}`)}
+        refreshing={refreshing}
+      />
 
-        <DashboardHeader
-          autoRefresh={autoRefresh}
-          onToggleAuto={() => setAutoRefresh(p => !p)}
-          onRefresh={() => fetchAll(true)}
-          onExport={handleExport}
-          lastUpdated={lastUpdated}
-          refreshing={refreshing}
+      {/* Main Content Area */}
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        {/* 1. Pure SOC Security Metric Cards (No banking SQL data) */}
+        <SOCMetricCards
+          metrics={metrics}
+          wafCount={wafAlerts.length}
+          loading={loading.metrics}
         />
 
-        {/* KPI Bar */}
-        <div className="mb-5">
-          <BankingKPIBar kpis={kpis} loading={loading.kpis} />
-        </div>
+        {/* 2. Infrastructure Node Heartbeat */}
+        <SectionCard icon={Activity} title="Infrastructure Node Heartbeat" iconColor="text-blue-600">
+          <HealthHeartbeatGrid health={health} loading={loading.health} />
+        </SectionCard>
 
-        {/* Health Heartbeat */}
-        <div className="mb-5">
-          <Section icon={Activity} title="Infrastructure Heartbeat" color="#00d4ff">
-            <HealthHeartbeatGrid health={health} loading={loading.health} />
-          </Section>
-        </div>
-
-        {/* Main Grid: Threats + Quarantine */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
-          {/* Threat Stream — 2/3 width */}
+        {/* 3. Main Grid: Threat Stream + Quarantine Manager */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Threat Stream (2/3) */}
           <div className="xl:col-span-2">
-            <Section
+            <SectionCard
               icon={AlertTriangle}
               title="Live Threat Event Stream"
-              color="#f59e0b"
+              iconColor="text-amber-600"
               action={
-                <span className="text-[10px] font-mono text-slate-500">
-                  {threats.length} events
+                <span className="text-xs font-mono font-semibold text-slate-500">
+                  {threats.length} events logged
                 </span>
-              }>
+              }
+            >
               <ThreatStreamFeed threats={threats} loading={loading.threats} />
-            </Section>
+            </SectionCard>
           </div>
 
-          {/* Quarantine Manager — 1/3 width */}
+          {/* Quarantine Manager (1/3) */}
           <div className="xl:col-span-1">
-            <Section icon={Shield} title="IP Quarantine" color="#ef4444">
+            <SectionCard icon={Shield} title="IP Quarantine Controls" iconColor="text-red-600">
               <QuarantineManager
                 blockedIPs={blocked}
                 loading={loading.blocked}
                 onRefresh={() => getBlockedIPs().then(r => setBlocked(r.data))}
               />
-            </Section>
+            </SectionCard>
           </div>
         </div>
 
-        {/* WAF Alerts + Vuln Lab */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-          {/* WAF Alerts */}
-          <Section icon={Shield} title="WAF Alert Feed" color="#818cf8"
+        {/* 4. WAF Alerts + Vulnerability Test Runner */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* WAF Alert Log */}
+          <SectionCard
+            icon={Shield}
+            title="WAF Attack Triggers (Coraza / Caddy)"
+            iconColor="text-indigo-600"
             action={
-              <span className="text-[10px] font-mono text-slate-500">
-                {wafAlerts.length} events
+              <span className="text-xs font-mono font-semibold text-slate-500">
+                {wafAlerts.length} triggers
               </span>
-            }>
+            }
+          >
             {loading.waf ? (
               <div className="space-y-2">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-9 rounded-lg animate-pulse" style={{ background: '#1e293b' }} />
+                  <div key={i} className="h-9 bg-slate-100 rounded-lg animate-pulse" />
                 ))}
               </div>
             ) : !wafAlerts.length ? (
-              <div className="text-center py-8 text-slate-500 text-sm">No WAF alerts.</div>
+              <div className="text-center py-8 text-slate-400 text-xs">No WAF alerts logged.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs border-collapse">
                   <thead>
-                    <tr>
+                    <tr className="bg-slate-100/70 border-b border-slate-200 text-left">
                       {['Time', 'IP', 'Type', 'Severity', 'Blocked'].map(h => (
-                        <th key={h} className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700/60">{h}</th>
+                        <th key={h} className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                          {h}
+                        </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100">
                     {wafAlerts.slice(0, 15).map(a => (
-                      <tr key={a.id} className="border-b border-slate-800/60 hover:bg-slate-800/20 transition">
+                      <tr key={a.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-3 py-2 font-mono text-slate-500 text-[10px] whitespace-nowrap">
                           {new Date(a.detected_at).toLocaleString()}
                         </td>
-                        <td className="px-3 py-2 font-mono text-indigo-400 font-bold whitespace-nowrap">{a.source_ip}</td>
-                        <td className="px-3 py-2 text-slate-300 whitespace-nowrap">{a.attack_type}</td>
+                        <td className="px-3 py-2 font-mono text-indigo-700 font-bold whitespace-nowrap">{a.source_ip}</td>
+                        <td className="px-3 py-2 text-slate-700 font-mono font-medium whitespace-nowrap">{a.attack_type}</td>
                         <td className="px-3 py-2">
-                          <span className="px-2 py-0.5 rounded text-[9px] font-bold"
-                            style={{
-                              background: a.severity === 'CRITICAL' ? '#ef444422' : a.severity === 'HIGH' ? '#f9731622' : '#f59e0b22',
-                              color: a.severity === 'CRITICAL' ? '#f87171' : a.severity === 'HIGH' ? '#fb923c' : '#fbbf24',
-                            }}>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                            a.severity === 'CRITICAL'
+                              ? 'bg-red-50 text-red-700 border-red-200'
+                              : a.severity === 'HIGH'
+                              ? 'bg-orange-50 text-orange-700 border-orange-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                          }`}>
                             {a.severity}
                           </span>
                         </td>
                         <td className="px-3 py-2">
-                          <span className={`text-[10px] font-bold ${a.blocked ? 'text-green-400' : 'text-slate-500'}`}>
+                          <span className={`text-[10px] font-bold ${a.blocked ? 'text-emerald-600' : 'text-slate-400'}`}>
                             {a.blocked ? '✓ YES' : '— NO'}
                           </span>
                         </td>
@@ -296,21 +295,21 @@ export function SOCDashboard() {
                 </table>
               </div>
             )}
-          </Section>
+          </SectionCard>
 
           {/* Vulnerability Test Runner */}
-          <Section icon={Terminal} title="Vulnerability Test Runner" color="#a78bfa">
+          <SectionCard icon={Terminal} title="Vulnerability Test Runner" iconColor="text-violet-600">
             <VulnerabilityTestRunner onAttackFired={() => setTimeout(() => fetchAll(), 1500)} />
-          </Section>
+          </SectionCard>
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-[10px] text-slate-700 font-mono">
-            SentryVault SOC Command Center · Internal 192.168.20.10 · Wazuh v4.14.7 · FastAPI /api/v1/soc
+        <footer className="pt-6 pb-4 border-t border-slate-200 text-center">
+          <p className="text-xs text-slate-400 font-mono">
+            SentryVault SOC Command Center · Internal Network 192.168.20.10 · PostgreSQL Threat Store · Wazuh v4.14.7
           </p>
-        </div>
-      </div>
+        </footer>
+      </main>
     </div>
   );
 }

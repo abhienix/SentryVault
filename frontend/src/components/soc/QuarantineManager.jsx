@@ -14,7 +14,7 @@ function QuarantineModal({ onClose, onSuccess }) {
     setErr('');
     try {
       await blockIP(ip.trim(), reason || 'Manually quarantined via SOC Dashboard');
-      onSuccess(`${ip.trim()} has been quarantined.`);
+      onSuccess(`${ip.trim()} quarantined in iptables & PostgreSQL.`);
       onClose();
     } catch (e) {
       setErr(e.response?.data?.detail || e.message);
@@ -24,27 +24,25 @@ function QuarantineModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
-      <div className="w-full max-w-md rounded-2xl border border-slate-700 overflow-hidden"
-        style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)' }}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 border border-red-500/30">
-              <Ban size={16} className="text-red-400" />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-100 border border-red-200 text-red-600">
+              <Ban size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">Quarantine IP Address</h3>
-              <p className="text-[10px] text-slate-400">Add to iptables blocklist + SOC DB</p>
+              <h3 className="text-sm font-bold text-slate-900">Quarantine IP Address</h3>
+              <p className="text-xs text-slate-500">Adds iptables DROP rule & logs to PostgreSQL</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-600 text-slate-400 hover:text-white transition">
+          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-300 text-slate-500 hover:text-slate-900 transition">
             <X size={14} />
           </button>
         </div>
         <div className="p-5 space-y-4">
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
               IP Address *
             </label>
             <input
@@ -52,12 +50,11 @@ function QuarantineModal({ onClose, onSuccess }) {
               value={ip}
               onChange={e => setIp(e.target.value)}
               placeholder="e.g. 192.168.10.99"
-              className="w-full px-3 py-2 rounded-lg border text-sm font-mono text-white placeholder-slate-600 focus:outline-none focus:border-red-400 transition"
-              style={{ background: '#0f172a', borderColor: '#334155' }}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-mono text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition bg-white"
             />
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
               Reason
             </label>
             <textarea
@@ -65,23 +62,26 @@ function QuarantineModal({ onClose, onSuccess }) {
               onChange={e => setReason(e.target.value)}
               placeholder="Reason for quarantine..."
               rows={2}
-              className="w-full px-3 py-2 rounded-lg border text-sm text-white placeholder-slate-600 focus:outline-none focus:border-red-400 transition resize-none"
-              style={{ background: '#0f172a', borderColor: '#334155' }}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition resize-none bg-white"
             />
           </div>
           {err && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-              <AlertCircle size={13} /> {err}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs">
+              <AlertCircle size={14} /> {err}
             </div>
           )}
-          <div className="flex gap-2 pt-1">
-            <button onClick={onClose}
-              className="flex-1 py-2 rounded-lg border border-slate-600 text-slate-400 hover:text-white text-sm transition">
+          <div className="flex gap-2 pt-2">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold transition"
+            >
               Cancel
             </button>
-            <button onClick={handleBlock} disabled={loading}
-              className="flex-1 py-2 rounded-lg text-sm font-bold text-white transition flex items-center justify-center gap-2"
-              style={{ background: loading ? '#991b1b' : '#dc2626' }}>
+            <button
+              onClick={handleBlock}
+              disabled={loading}
+              className="flex-1 py-2 rounded-lg text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition flex items-center justify-center gap-2 shadow-sm"
+            >
               {loading ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
               {loading ? 'Quarantining...' : 'Quarantine IP'}
             </button>
@@ -106,7 +106,7 @@ export function QuarantineManager({ blockedIPs, loading, onRefresh }) {
     setUnblocking(ip);
     try {
       await unblockIP(ip);
-      showToast(`${ip} removed from quarantine.`);
+      showToast(`${ip} unblocked from iptables.`);
       onRefresh();
     } catch (e) {
       showToast(`Error: ${e.response?.data?.detail || e.message}`);
@@ -124,74 +124,75 @@ export function QuarantineManager({ blockedIPs, loading, onRefresh }) {
         />
       )}
 
-      {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border border-green-500/30 text-green-400 text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)' }}>
-          <CheckCircle size={16} /> {toast}
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-lg text-xs font-semibold border border-slate-800">
+          <CheckCircle size={15} className="text-emerald-400" /> {toast}
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-sm font-bold text-white">IP Quarantine Manager</h3>
-          <p className="text-[10px] text-slate-500 mt-0.5">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            IP Quarantine Manager
+          </h3>
+          <p className="text-xs text-slate-400 mt-0.5">
             {blockedIPs?.length ?? 0} active quarantine{blockedIPs?.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition"
-          style={{ background: '#dc2626', border: '1px solid #ef444460' }}>
-          <Plus size={13} /> Quarantine IP
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition shadow-sm"
+        >
+          <Plus size={14} /> Quarantine IP
         </button>
       </div>
 
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-12 rounded-lg animate-pulse" style={{ background: '#1e293b' }} />
+            <div key={i} className="h-10 bg-slate-100 rounded-lg animate-pulse" />
           ))}
         </div>
       ) : !blockedIPs?.length ? (
-        <div className="text-center py-10 text-slate-500">
-          <ShieldOff size={36} className="mx-auto mb-3 opacity-30" />
-          <p className="text-sm font-semibold">No quarantined IPs.</p>
+        <div className="text-center py-8 text-slate-400">
+          <ShieldOff size={32} className="mx-auto mb-2 text-slate-300" />
+          <p className="text-xs font-semibold text-slate-500">No quarantined IPs.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
             <thead>
-              <tr>
+              <tr className="bg-slate-100/70 border-b border-slate-200 text-left">
                 {['IP Address', 'Reason', 'Blocked At', 'Source', ''].map(h => (
-                  <th key={h} className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700/60">
+                  <th key={h} className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {blockedIPs.map(b => (
-                <tr key={b.id}
-                  className="border-b border-slate-800/60 hover:bg-slate-800/20 transition-colors group">
-                  <td className="px-3 py-2.5 font-mono text-red-400 font-bold whitespace-nowrap">
+                <tr key={b.id} className="hover:bg-slate-50 transition-colors group">
+                  <td className="px-3 py-2.5 font-mono font-bold text-red-600 whitespace-nowrap">
                     {b.ip_address}
                   </td>
-                  <td className="px-3 py-2.5 text-slate-400 max-w-xs truncate">
+                  <td className="px-3 py-2.5 text-slate-600 max-w-xs truncate">
                     {b.reason || '—'}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-slate-500 whitespace-nowrap text-[10px]">
+                  <td className="px-3 py-2.5 font-mono text-slate-400 whitespace-nowrap text-[10px]">
                     {new Date(b.blocked_at).toLocaleString()}
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-700/60 text-slate-400">
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
                       {b.block_source || 'SOAR'}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-3 py-2.5 text-right">
                     <button
                       onClick={() => handleUnblock(b.ip_address)}
                       disabled={unblocking === b.ip_address}
-                      className="opacity-0 group-hover:opacity-100 transition flex items-center gap-1 px-2 py-1 rounded border border-green-700 text-green-400 hover:bg-green-500/10 text-[10px] whitespace-nowrap">
+                      className="opacity-0 group-hover:opacity-100 transition inline-flex items-center gap-1 px-2.5 py-1 rounded border border-emerald-300 text-emerald-700 hover:bg-emerald-50 text-[10px] font-bold"
+                    >
                       {unblocking === b.ip_address
                         ? <Loader2 size={10} className="animate-spin" />
                         : <ShieldOff size={10} />}
