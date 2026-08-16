@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="boxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+
+    <!-- Glowing dot for animation -->
+    <circle id="packet" r="6" fill="#10b981" filter="drop-shadow(0 0 4px #10b981)"/>
+    <circle id="packetRed" r="6" fill="#ef4444" filter="drop-shadow(0 0 4px #ef4444)"/>
+    <circle id="logPacket" r="4" fill="#f59e0b" filter="drop-shadow(0 0 2px #f59e0b)"/>
+    
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bgGrad)" rx="12"/>
+
+  <!-- Title -->
+  <text x="400" y="50" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#f8fafc" text-anchor="middle">SentryVault Architecture - DMZ + Internal Network</text>
+
+  <!-- Network Boundaries -->
+  <rect x="50" y="80" width="700" height="200" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="5,5" rx="8"/>
+  <text x="60" y="100" font-family="Arial" font-size="14" fill="#94a3b8">DMZ Network (192.168.10.x)</text>
+
+  <rect x="50" y="320" width="700" height="200" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="5,5" rx="8"/>
+  <text x="60" y="340" font-family="Arial" font-size="14" fill="#94a3b8">Internal Network (192.168.20.x)</text>
+
+  <!-- Components -->
+  <rect x="70" y="120" width="120" height="60" fill="url(#boxGrad)" filter="url(#shadow)" rx="8" stroke="#3b82f6" stroke-width="2"/>
+  <text x="130" y="155" font-family="Arial" font-size="16" fill="#e2e8f0" text-anchor="middle">Internet User</text>
+
+  <rect x="300" y="120" width="160" height="80" fill="url(#boxGrad)" filter="url(#shadow)" rx="8" stroke="#10b981" stroke-width="2"/>
+  <text x="380" y="150" font-family="Arial" font-size="16" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Caddy + Coraza</text>
+  <text x="380" y="170" font-family="Arial" font-size="12" fill="#94a3b8" text-anchor="middle">Reverse Proxy / WAF</text>
+
+  <rect x="570" y="120" width="150" height="80" fill="url(#boxGrad)" filter="url(#shadow)" rx="8" stroke="#8b5cf6" stroke-width="2"/>
+  <text x="645" y="150" font-family="Arial" font-size="16" font-weight="bold" fill="#e2e8f0" text-anchor="middle">FastAPI Backend</text>
+  <text x="645" y="170" font-family="Arial" font-size="12" fill="#94a3b8" text-anchor="middle">Uvicorn Port 8000</text>
+
+  <rect x="300" y="220" width="160" height="40" fill="url(#boxGrad)" filter="url(#shadow)" rx="8" stroke="#ef4444" stroke-width="2"/>
+  <text x="380" y="245" font-family="Arial" font-size="14" fill="#e2e8f0" text-anchor="middle">Suricata IDS</text>
+
+  <rect x="150" y="420" width="150" height="80" fill="url(#boxGrad)" filter="url(#shadow)" rx="8" stroke="#f59e0b" stroke-width="2"/>
+  <text x="225" y="450" font-family="Arial" font-size="16" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Wazuh Manager</text>
+  <text x="225" y="470" font-family="Arial" font-size="12" fill="#94a3b8" text-anchor="middle">SIEM / Port 1514</text>
+
+  <rect x="570" y="420" width="150" height="80" fill="url(#boxGrad)" filter="url(#shadow)" rx="8" stroke="#0ea5e9" stroke-width="2"/>
+  <text x="645" y="450" font-family="Arial" font-size="16" font-weight="bold" fill="#e2e8f0" text-anchor="middle">MySQL Database</text>
+  <text x="645" y="470" font-family="Arial" font-size="12" fill="#94a3b8" text-anchor="middle">Port 3306</text>
+
+  <!-- Static Lines/Connections -->
+  <path d="M 190 150 L 300 150" stroke="#475569" stroke-width="2" fill="none"/>
+  <path d="M 460 150 L 570 150" stroke="#475569" stroke-width="2" fill="none"/>
+  <path d="M 645 200 L 645 420" stroke="#475569" stroke-width="2" fill="none"/>
+  
+  <!-- Log lines -->
+  <path d="M 380 260 L 380 300 L 225 300 L 225 420" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="4,4"/>
+  <path d="M 645 200 L 520 200 L 520 300 L 225 300" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="4,4"/>
+
+  <!-- Legend -->
+  <rect x="50" y="530" width="700" height="60" fill="url(#boxGrad)" rx="8"/>
+  <text x="70" y="565" font-family="Arial" font-size="14" fill="#e2e8f0">Legend:</text>
+  <circle cx="150" cy="560" r="6" fill="#10b981"/>
+  <text x="165" y="565" font-family="Arial" font-size="12" fill="#94a3b8">Valid Traffic</text>
+  <circle cx="280" cy="560" r="6" fill="#ef4444"/>
+  <text x="295" y="565" font-family="Arial" font-size="12" fill="#94a3b8">Blocked by WAF</text>
+  <line x1="420" y1="560" x2="450" y2="560" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="460" y="565" font-family="Arial" font-size="12" fill="#94a3b8">Telemetry / Logs (Wazuh)</text>
+
+  <!-- Animations -->
+  <use href="#packet">
+    <animateMotion dur="3s" repeatCount="indefinite" path="M 190 150 L 300 150 L 460 150 L 570 150 L 645 150 L 645 420"/>
+  </use>
+  
+  <use href="#packet">
+    <animateMotion dur="3s" begin="1.5s" repeatCount="indefinite" path="M 190 150 L 300 150 L 460 150 L 570 150 L 645 150 L 645 420"/>
+  </use>
+
+  <use href="#packetRed">
+    <animateMotion dur="4s" repeatCount="indefinite" path="M 190 150 L 300 150"/>
+    <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.51;1" dur="4s" repeatCount="indefinite"/>
+  </use>
+
+  <use href="#logPacket">
+    <animateMotion dur="2s" repeatCount="indefinite" path="M 380 260 L 380 300 L 225 300 L 225 420"/>
+  </use>
+
+  <use href="#logPacket">
+    <animateMotion dur="2.5s" begin="0.5s" repeatCount="indefinite" path="M 645 200 L 520 200 L 520 300 L 225 300 L 225 420"/>
+  </use>
+</svg>

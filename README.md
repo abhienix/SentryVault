@@ -530,6 +530,7 @@ Base URL: `http://<HOST>:8000/api/v1`
 
 ---
 
+
 ## 🧪 Demo Vulnerability Lab
 
 The `DEMO_MODE=true` environment flag exposes controlled vulnerable endpoints for WAF rule validation and cybersecurity training:
@@ -595,6 +596,22 @@ sudo iptables -A INPUT -p udp -s 192.168.10.0/24 --dport 1514 -j ACCEPT
 sudo iptables -A INPUT -p tcp -s 192.168.10.0/24 --dport 1515 -j ACCEPT
 sudo iptables -A INPUT -p tcp -s 192.168.10.0/24 --dport 55000 -j ACCEPT
 ```
+
+## Enterprise Architecture Overview
+
+<p align="center">
+  <img src="docs/architecture_animated.svg" alt="SentryVault Animated Architecture" width="100%" />
+</p>
+
+### Network Security & Infrastructure Setup
+Our zero-trust architecture is deployed across a **DMZ (192.168.10.x)** and an **Internal Network (192.168.20.x)** to ensure defense-in-depth:
+
+1. **Edge Security (Caddy + Coraza WAF)**: All incoming traffic terminates at our Caddy reverse proxy. It enforces strict TLS, applies security headers, and routes traffic through the Coraza Web Application Firewall (WAF). Coraza implements the OWASP Core Rule Set to proactively block malicious payloads (SQLi, XSS, Path Traversal) before they reach the application.
+2. **Network Intrusion Detection (Suricata IDS)**: Operating at the network layer, Suricata monitors incoming packets against Emerging Threats (ET) rulesets. It identifies anomalous network behaviors and generates structured `eve.json` alerts.
+3. **Application Layer (FastAPI + React)**: The core banking logic is built on Python FastAPI, which serves a highly responsive Vite/React Single Page Application. The API uses JWT authentication, bcrypt hashing, and strict Pydantic schemas for request validation.
+4. **Isolated Database (MySQL 8)**: The persistent storage tier is completely isolated within the internal network, accessible only by the DMZ backend over an explicitly allowed UFW route on port 3306.
+5. **Telemetry & SIEM (Wazuh)**: A Wazuh Agent actively monitors the DMZ host for file integrity (FIM) and rootkits. It securely ships aggregated access logs, Suricata alerts, and application logs over port 1514 to the internal Wazuh Manager for real-time threat analysis and incident response.
+
 
 ---
 
