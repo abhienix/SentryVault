@@ -16,23 +16,20 @@
 
 - [What is SentryVault?](#-what-is-sentryvault)
 - [Live Network Architecture](#-live-network-architecture)
-- [Application Suite & Key Views](#-application-suite--key-views)
-  - [1. Grafana Dark SOC Command Console (Metrics & Heartbeat)](#1-grafana-dark-soc-command-console-metrics--heartbeat)
+- [Application Suite & Interface Previews](#-application-suite--interface-previews)
+  - [1. Grafana Dark SOC Command Console](#1-grafana-dark-soc-command-console)
   - [2. Live Threat Stream & IP Quarantine Manager](#2-live-threat-stream--ip-quarantine-manager)
   - [3. Finacle E-Banking Login Gateway](#3-finacle-e-banking-login-gateway)
   - [4. Finacle CBS Administrator & Operations Console](#4-finacle-cbs-administrator--operations-console)
   - [5. Customer Banking Overview Dashboard](#5-customer-banking-overview-dashboard)
-- [VM Topology & Service Isolation](#-vm-topology--service-isolation)
+- [VM Topology & Network Boundaries](#-vm-topology--network-boundaries)
 - [Key Security Features](#-key-security-features)
 - [Tech Stack](#-tech-stack)
 - [Database Schemas](#-database-schemas)
-- [Wazuh SIEM & Active Response](#-wazuh-siem--active-response)
-- [SOAR Automation](#-soar-automation)
+- [Wazuh SIEM & SOAR Automation](#-wazuh-siem--soar-automation)
 - [API Reference](#-api-reference)
 - [Deployment Guide](#-deployment-guide)
-- [Default Credentials](#-default-credentials)
 - [Project Structure](#-project-structure)
-- [Verification Matrix](#-verification-matrix)
 
 ---
 
@@ -92,39 +89,57 @@ flowchart TD
 
 ---
 
-## 🖥️ Application Suite & Key Views
+## 🖥️ Application Suite & Interface Previews
 
-The system includes five main application interfaces designed for security analysts, system administrators, and banking customers.
-
-### 1. Grafana Dark SOC Command Console (Metrics & Heartbeat)
+### 1. Grafana Dark SOC Command Console
 Located at `http://192.168.20.10:3000` on the **Internal Server**:
-- **Design System**: High-density dark console (`#0d1117` canvas, `#161b22` panels, `#2a2e37` borders).
-- **Top Bar**: System status pill (`SYSTEM OPERATIONAL`), real-time UTC clock, auto-refresh toggle (`LIVE 5s`), and DMZ host status indicator.
-- **4 Metric Cards with SVG Sparklines**:
-  - **Total Threat Events (24h)**: Live count of threats persisted in PostgreSQL.
-  - **Active Quarantined IPs**: Count of active `iptables DROP` rules enforced by SOAR.
-  - **WAF Triggers**: Coraza & Caddy edge WAF attack detection count.
-  - **SOAR Policy Status**: Automated IP quarantine enforcement state.
-- **Infrastructure Heartbeat Strip**: Real-time ping/TCP latency in ms for **MySQL DB**, **PostgreSQL SOC**, **Wazuh Manager**, **Internal Host**, and **DMZ Host**. Hovering displays popover micro-charts of recent latency history.
+
+![Grafana Dark SOC Command Console](docs/images/soc_dashboard.png)
+
+- **High-Density Dark Design**: `#0d1117` near-black canvas, `#161b22` panel containers, and `#2a2e37` subtle borders.
+- **Top Bar**: System status pill (`SYSTEM OPERATIONAL`), live UTC clock, auto-refresh toggle (`LIVE 5s`), and DMZ host status indicator.
+- **4 Metric Cards with SVG Sparklines**: Total Threat Events (24h), Active Quarantined IPs, WAF Triggers, and SOAR Policy Status.
+- **Infrastructure Heartbeat Strip**: Real-time ping/TCP latency in ms for **MySQL DB**, **PostgreSQL SOC**, **Wazuh Manager**, **Internal Host**, and **DMZ Host**. Hovering reveals popover micro-charts of recent latency history.
+
+---
 
 ### 2. Live Threat Stream & IP Quarantine Manager
-- **Live Threat Event Stream**: Auto-scrolling log table featuring Spacebar pause shortcut, inline search filter by IP/severity/attack type, and raw JSON alert payload inspector.
-- **IP Quarantine Manager**: Active table of blocked IPs (`192.168.10.55`, `10.0.0.42`, `10.10.5.15`), block reasons (SSH Brute Force, SQL Injection), timestamps, and inline 2-step confirmation **UNBLOCK** action.
-- **Report Export Pipeline**: Filter-aware JSON and CSV export buttons displaying active event counts.
+Located on the lower panel of the SOC Command Console:
+
+![Live Threat Stream & IP Quarantine Manager](docs/images/soc_quarantine.png)
+
+- **Live Threat Event Stream**: Real-time log table featuring Spacebar pause shortcut, inline search filter by IP/severity/attack type, and raw JSON alert payload inspector.
+- **IP Quarantine Manager**: Active table of quarantined IPs (`192.168.10.55`, `10.0.0.42`, `10.10.5.15`), block reasons (SSH Brute Force, SQL Injection), timestamps, and inline 2-step confirmation **UNBLOCK** action.
+- **Scoped Export Bar**: Filter-aware JSON and CSV export pipeline.
+
+---
 
 ### 3. Finacle E-Banking Login Gateway
 Located at `http://localhost:5000/login` (DMZ Network):
-- **Branded Gateway**: Finacle CBS Operator & Customer Access Portal with 256-bit TLS encryption indicator.
-- **Role-Based Authentication**: Supports both **Customer Access** and **CBS Administrator Access** with JWT security tokens.
+
+![Finacle E-Banking Login Gateway](docs/images/login_gateway.png)
+
+- **Branded Authentication Gateway**: Finacle CBS Operator & Customer Access Portal with 256-bit TLS encryption indicator.
+- **Role-Based Access**: Supports both Customer Access and CBS Administrator Access with signed security tokens.
+
+---
 
 ### 4. Finacle CBS Administrator & Operations Console
 Located at `http://localhost:5000/admin-dashboard` (DMZ Network):
-- **Core Banking Metrics**: Vault Deposits (`₹4,50,408.73`), Total Customers (`4`), Active Accounts (`10`), and Frozen Accounts (`0`).
-- **Customer Accounts Directory**: Account approval management grid with real-time **Freeze Account** and **Close** operational controls.
+
+![Finacle CBS Administrator Console](docs/images/admin_console.png)
+
+- **Core Banking Metrics**: Vault Deposits (`₹4,50,408.73`), Total Customers (`4`), Active Accounts (`10`), and Suspended Accounts (`0`).
+- **Customer Accounts Directory**: Account status management grid with real-time **Freeze Account** and **Close** operational controls.
 - **System Audit Log**: Real-time administrative oversight log tracking account approvals and status changes.
+
+---
 
 ### 5. Customer Banking Overview Dashboard
 Located at `http://localhost:5000/dashboard` (DMZ Network):
+
+![Customer Account Overview Dashboard](docs/images/customer_dashboard.png)
+
 - **Customer Account Ledger**: Net ledger balance (`₹84,179.90`) across linked savings and current accounts.
 - **Transaction Records**: Detailed transaction history displaying transaction reference numbers, value dates, amounts, and completion status.
 - **Fund Transfer Workflow**: Immediate IMPS/NEFT transfer trigger modal with beneficiary directory.
@@ -132,7 +147,7 @@ Located at `http://localhost:5000/dashboard` (DMZ Network):
 
 ---
 
-## 🖥️ VM Topology & Service Isolation
+## 🖥️ VM Topology & Network Boundaries
 
 | VM Node | IP Address | Subnet | Dedicated Role & Services |
 |---|---|---|---|
@@ -190,7 +205,7 @@ soc_metrics     (id, metric_name, metric_value, recorded_at)
 
 ---
 
-## 📡 Wazuh SIEM & Active Response
+## 📡 Wazuh SIEM & SOAR Automation
 
 Wazuh Manager **v4.14.7** runs on the Internal VM (`192.168.20.10`) listening on:
 - `1514` TCP/UDP — Log shipping
@@ -292,23 +307,17 @@ docker-compose exec backend python scripts/seed_data.py
 
 ---
 
-## 🔑 Default Credentials
-
-| Service | Username | Password | Access Location |
-|---|---|---|---|
-| **Banking Customer** | `john_doe` | `Password123!` | DMZ Banking Portal |
-| **Banking Customer** | `abhimanyu` | `Password123!` | DMZ Banking Portal |
-| **Banking Admin** | `admin` | `Password123!` | DMZ Admin Console |
-| **MySQL Database** | `sentryuser` | `SecureDbPassword123!` | `192.168.20.10:3306` |
-| **PostgreSQL Database** | `sentry_soc` | `SocSecurityPass123!` | `127.0.0.1:5432` |
-| **Wazuh Manager API** | `wazuh-wui` | `MyS3cr37P450r.*-` | `https://192.168.20.10:55000` |
-
----
-
 ## 📁 Project Structure
 
 ```text
 SentryVault/
+├── docs/images/                # Interface screenshots for README
+│   ├── soc_dashboard.png
+│   ├── soc_quarantine.png
+│   ├── login_gateway.png
+│   ├── admin_console.png
+│   └── customer_dashboard.png
+│
 ├── backend/                    # FastAPI Application
 │   ├── app/
 │   │   ├── api/routers/        # Auth, Accounts, Transactions, Admin, SOC
@@ -343,22 +352,6 @@ SentryVault/
 ├── docker-compose.yml
 └── README.md
 ```
-
----
-
-## ✅ Verification Matrix (Internal Server)
-
-| Verification Check | Result |
-|---|---|
-| Internal IP `192.168.20.10` on `ens37` | ✔ PASS |
-| DMZ `192.168.10.10` ping reachable | ✔ PASS — 4.4ms RTT |
-| MySQL `0.0.0.0:3306` bound & accessible | ✔ PASS |
-| Wazuh Manager v4.14.7 — ports 1514/1515/55000 active | ✔ PASS |
-| PostgreSQL `sentry_security` — 4 tables seeded | ✔ PASS |
-| SOAR `soc_automation.py` — iptables block verified | ✔ PASS |
-| Nginx Grafana Dark SOC Console — HTTP 200 on `:80` & `:3000` | ✔ PASS |
-| FastAPI Backend — `ONLINE` on `:8000` | ✔ PASS |
-| Production bundle compiled (`index-CirF5qCd.js`) | ✔ PASS |
 
 ---
 
