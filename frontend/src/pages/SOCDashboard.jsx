@@ -5,7 +5,6 @@ import { GrafanaMetricCards }  from '../components/soc/GrafanaMetricCards';
 import { GrafanaHeartbeat }    from '../components/soc/GrafanaHeartbeat';
 import { GrafanaThreatStream } from '../components/soc/GrafanaThreatStream';
 import { GrafanaQuarantine }   from '../components/soc/GrafanaQuarantine';
-import { GrafanaVulnRunner }   from '../components/soc/GrafanaVulnRunner';
 import { GrafanaExportBar }    from '../components/soc/GrafanaExportBar';
 
 import {
@@ -135,16 +134,12 @@ export function SOCDashboard() {
           onTogglePause={() => setPaused(p => !p)}
         />
 
-        {/* 5. IP Quarantine Manager & Vulnerability Test Runner Side-by-Side */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+        {/* 5. IP Quarantine Manager */}
+        <div>
           <GrafanaQuarantine
             blockedIPs={blocked}
             loading={loading.blocked}
             onRefresh={() => getBlockedIPs().then(r => setBlocked(r.data))}
-          />
-
-          <GrafanaVulnRunner
-            onAttackFired={() => setTimeout(() => fetchAll(), 1500)}
           />
         </div>
 
