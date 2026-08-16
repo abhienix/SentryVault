@@ -1,7 +1,5 @@
 import uuid
-from datetime import datetime
-from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
+from datetime import datetime, timezone
 
 from app.models.models import (
     User, Account, Transaction, Notification, AuditLog,
@@ -53,7 +51,7 @@ class BankingService:
                 transaction_type=TransactionTypeEnum.TRANSFER.value,
                 description=transfer_data.description or "Fund Transfer",
                 status=TransactionStatusEnum.COMPLETED.value,
-                created_at=datetime.utcnow()
+                created_at=datetime.now(timezone.utc)
             )
             db.add(transaction)
 
